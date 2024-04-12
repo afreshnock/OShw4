@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define NUM_THREADS 4
 
@@ -24,10 +25,8 @@ void *getLineAndMax(void *threadNum){
 	char *line = NULL;
     size_t len = 0;
     ssize_t read;
-	pthread_mutex_lock(&mutexsum);
-	printf("\nstart %d ", startLine);
-	printf(" end %d ", endLine);
 
+	pthread_mutex_lock(&mutexsum);
 	fseek(file, 0, SEEK_SET);
     for (int i = 0; i < startLine; i++) {
         if (getline(&line, &len, file) == -1) {
@@ -49,9 +48,9 @@ void *getLineAndMax(void *threadNum){
 			currentCharacter = line[i];
 		}
 		
-		printf("Thead Line Range: %d - %d  ", startLine, endLine);
-		printf("Line: %d ", lineNum);
-		printf("Max Char: %c\n", maxCharacter);
+		//printf("Thead Line Range: %d - %d  ", startLine, endLine);
+		//printf("Line: %d ", lineNum);
+		//printf("Max Char: %c\n", maxCharacter);
 		
 	}
 	pthread_mutex_unlock(&mutexsum);
@@ -91,20 +90,20 @@ int main() {
 	int linesPerThread = totalLines / NUM_THREADS;
     int remainder = totalLines % NUM_THREADS;
     int startLine = 1;
-
-	
+	double threadTime[4] = {};
+	clock_t start, end;
 	/* Makes theads and runs them with the given amount of lines */
 	for (i = 0; i < NUM_THREADS; i++ ) {
 		int endLine = startLine + linesPerThread - 1;
-		printf("start %d ", startLine);
-		printf(" end %d ", endLine);
 		if (i < remainder) {
             endLine++;
         }
 		int threadRange[2] = {startLine, endLine};
         startLine = endLine + 1;
+		start = clock();
 		rc = pthread_create(&threads[i], &attr, getLineAndMax, (void *)threadRange); 
-
+		end = clock();
+		threadTime[i] = ((double)(end - start)) / CLOCKS_PER_SEC;
 		if (rc) {
 			printf("ERROR; return code from pthread_create() is %d\n", rc);
 			exit(-1);
@@ -121,8 +120,9 @@ int main() {
 		}
 	}
 
-	
-
+	for (i = 0; i < NUM_THREADS; i++) {
+		printf("Thread: %d, Time: %lf\n", i, threadTime[i]);
+	}
 	fclose(file);
 	pthread_mutex_destroy(&mutexsum);
 	printf("Main: program completed. Exiting.\n");
