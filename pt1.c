@@ -5,35 +5,38 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define NUM_THREADS 4
+#define NUM_THREADS 8						// Number of threads. Can be changed for scale ability
 
-#define ARRAY_SIZE 2000000
-#define STRING_SIZE 16
-#define ALPHABET_SIZE 26
+pthread_mutex_t mutex;						// mutex for reading the file
 
-pthread_mutex_t mutexsum;			// mutex for char_counts
-FILE *file; 					// file
-char char_array[ARRAY_SIZE][STRING_SIZE];
-int char_counts[ALPHABET_SIZE];			// count of individual characters
+double threadTime[NUM_THREADS] = {1,1,1,1,1,1,1,1};
+
+int threadInfo[NUM_THREADS][3] = {};
+
 
 //This function given a line of characters returns the max ascii value from all the characters in the line
-void *getLineAndMax(void *threadNum){
-	int *threadRange = (int *)threadNum;
-    int startLine = threadRange[0];
-    int endLine = threadRange[1];
+void *getLineAndMax(void *threadIndex){
+	
+	/* Trys to open file */
+	char* src_file = "/homes/dan/625/wiki_dump.txt";
+	//char* src_file = "/homes/brenth01/hw4/3way-pthread/test.txt"; // Test
+	FILE *file  = fopen(src_file, "r");
+	if (file == NULL) {
+		printf("File did not open");
+		exit(-1);
+	}
+	clock_t start, end;
+	
+	int threadNum = (int)threadIndex;
+    int startLine = threadInfo[threadNum][0];
+    int endLine = threadInfo[threadNum][1];
 	int lineNum = 0;
 	char *line = NULL;
     size_t len = 0;
     ssize_t read;
 
-	pthread_mutex_lock(&mutexsum);
-	fseek(file, 0, SEEK_SET);
-    for (int i = 0; i < startLine; i++) {
-        if (getline(&line, &len, file) == -1) {
-            printf("Unable to seek to the starting line\n");
-            return;
-        }
-    }
+	start = clock();
+	fseek(file, startLine, SEEK_SET);
 
 	while ((read = getline(&line, &len, file)) != -1 && lineNum < endLine) {
 		lineNum++;
@@ -47,14 +50,13 @@ void *getLineAndMax(void *threadNum){
 			i++;
 			currentCharacter = line[i];
 		}
-		
-		//printf("Thead Line Range: %d - %d  ", startLine, endLine);
-		//printf("Line: %d ", lineNum);
-		//printf("Max Char: %c\n", maxCharacter);
-		
 	}
-	pthread_mutex_unlock(&mutexsum);
 	free(line);
+	end = clock();
+	threadTime[threadNum] = ((double)(end - start)) / CLOCKS_PER_SEC;
+	printf("Thead Number %d ", threadNum);
+	printf("Thread Time %f \n", threadTime[threadNum]);
+	fclose(file);
 }
 
 int main() {
@@ -73,7 +75,7 @@ int main() {
 	/* Trys to open file */
 	char* src_file = "/homes/dan/625/wiki_dump.txt";
 	//char* src_file = "/homes/brenth01/hw4/3way-pthread/test.txt"; // Test
-	file = fopen(src_file, "r");
+	FILE *file  = fopen(src_file, "r");
 	if (file == NULL) {
 		printf("File did not open");
 		exit(-1);
@@ -85,25 +87,28 @@ int main() {
     while ((read = getline(&line, &len, file)) != -1) {
         totalLines++;
     }
-
+	fclose(file);
 	/* Calculates amount of lines that a single tread runs */
 	int linesPerThread = totalLines / NUM_THREADS;
     int remainder = totalLines % NUM_THREADS;
     int startLine = 1;
-	double threadTime[4] = {};
-	clock_t start, end;
+	
+	
+
 	/* Makes theads and runs them with the given amount of lines */
 	for (i = 0; i < NUM_THREADS; i++ ) {
 		int endLine = startLine + linesPerThread - 1;
 		if (i < remainder) {
             endLine++;
         }
-		int threadRange[2] = {startLine, endLine};
+		//pthread_mutex_lock(&mutex);
+		threadInfo[i][0] = startLine;
+		threadInfo[i][1] = endLine;
+		threadInfo[i][2] = i;
         startLine = endLine + 1;
-		start = clock();
-		rc = pthread_create(&threads[i], &attr, getLineAndMax, (void *)threadRange); 
-		end = clock();
-		threadTime[i] = ((double)(end - start)) / CLOCKS_PER_SEC;
+		
+		rc = pthread_create(&threads[i], &attr, getLineAndMax, (void *)i); 
+		//pthread_mutex_unlock(&mutex);
 		if (rc) {
 			printf("ERROR; return code from pthread_create() is %d\n", rc);
 			exit(-1);
@@ -120,11 +125,13 @@ int main() {
 		}
 	}
 
+	/* Print results */
+	printf("Average Lines Per Thread: %d\n", linesPerThread);
 	for (i = 0; i < NUM_THREADS; i++) {
 		printf("Thread: %d, Time: %lf\n", i, threadTime[i]);
 	}
-	fclose(file);
-	pthread_mutex_destroy(&mutexsum);
+	
+	pthread_mutex_destroy(&mutex);
 	printf("Main: program completed. Exiting.\n");
 	pthread_exit(NULL);
 
