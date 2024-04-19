@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define NUM_THREADS 8
-
 
 pthread_mutex_t mutex;		// mutex for theadTime
 
@@ -142,11 +142,16 @@ int main() {
 	}
 
 	printf("Average Lines Per Thread: %d\n", linesPerThread);
-    for (int i = 0; i < NUM_THREADS; i++)
+    for (i = 0; i < NUM_THREADS; i++)
     {
         printf("Thread: %d, Time: %lf\n", i, threadTime[i]);
     }
 
+    /* This is for the assignment
+    for (i = 0; i < sizeof(maxCharArray);i++){
+        printf("%d", maxCharArray[i]);
+    }
+    */
 	pthread_mutex_destroy(&mutex);
 	printf("Main: program completed. Exiting.\n");
 	pthread_exit(NULL);
