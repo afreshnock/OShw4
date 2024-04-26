@@ -1,0 +1,1 @@
+/opt/software/software/GCCcore/11.3.0/bin/cc CMakeFiles/pt1.dir/pt1.c.o -o pt1  -lpthread 

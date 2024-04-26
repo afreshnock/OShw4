@@ -1,0 +1,1 @@
+/opt/software/software/GCCcore/11.3.0/bin/cc CMakeFiles/hw4.dir/pt1.c.o -o hw4  -lpthread 

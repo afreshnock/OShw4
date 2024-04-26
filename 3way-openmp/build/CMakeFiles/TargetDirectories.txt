@@ -1,0 +1,3 @@
+/homes/afreshnock/OShw4/3way-openmp/build/CMakeFiles/pt3.dir
+/homes/afreshnock/OShw4/3way-openmp/build/CMakeFiles/edit_cache.dir
+/homes/afreshnock/OShw4/3way-openmp/build/CMakeFiles/rebuild_cache.dir

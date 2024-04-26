@@ -1,0 +1,3 @@
+Consolidate compiler generated dependencies of target hw4
+[100%] Built target hw4
+/var/spool/slurm/d/job16649943/slurm_script: line 3: 2777241 Segmentation fault      (core dumped) ./hw4
