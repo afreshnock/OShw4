@@ -13,7 +13,7 @@ int NUM_THREADS;
 char char_array[ARRAY_SIZE][STRING_SIZE];
 int char_counts[ALPHABET_SIZE];			// global count of individual characters
 int local_char_count[ALPHABET_SIZE];
-//int maxCharArray[1000000] = {};
+int maxCharArray[1000000] = {};
 
 char getRandomChar()
 {

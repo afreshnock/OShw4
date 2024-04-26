@@ -103,7 +103,7 @@ int main() {
     
     fclose(file);
     
-    maxCharArray = (int *)malloc(fileSize * sizeof(int));
+    maxCharArray = (int *)malloc(totalAmountOfLines * sizeof(int));
     
     int linesPerThread = totalAmountOfLines / NUM_THREADS;
     int remainder = totalAmountOfLines % NUM_THREADS;
